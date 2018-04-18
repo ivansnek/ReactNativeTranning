@@ -8,8 +8,12 @@ import {
   Image,
   KeyboardAvoidingView,
   TouchableOpacity,
-  Platform
+  Platform,
+  Animated,
+  Easing,
+  Keyboard
 } from 'react-native';
+import { Images, Colors, Fonts } from '../../theme';
 
 export default class LoginView extends React.Component {
   constructor(props) {
@@ -18,29 +22,39 @@ export default class LoginView extends React.Component {
       text: '',
       password: ''
     }
-
-    UIManager.createView(
-      2,
-      'RCTView',
-      1,
-      { flex: 1 }
-    );
-    UIManager.createView(
-      3,
-      'RCTTextField',
-      1,
-      { text: 'Juan Perez' }
-    );
-    UIManager.setChildren(
-      2,
-      [ 3 ]
-    );
-    UIManager.setChildren(
-      1,
-      [ 2 ]
-    );
-
   }
+
+  componentWillMount() {
+    this.logoTraslationValue = new Animated.ValueXY();
+    this.logoScaleValue = new Animated.Value(1);
+  }
+
+  handleKeyboardDidShow  = () => {
+    Animated.timing(this.logoTraslationValue, {
+      toValue: { x: 0, y: -35 },
+      duration: 200,
+      easing: Easing.linear
+    }).start();
+    Animated.timing(this.logoScaleValue, {
+      toValue: .75,
+      duration: 200,
+      easing: Easing.linear
+    }).start();
+  }
+
+  handleKeyboardDidHide = () => {
+    Animated.timing(this.logoTraslationValue, {
+      toValue: { x: 0, y: 0 },
+      duration: 200,
+      easing: Easing.linear
+    }).start();
+    Animated.timing(this.logoScaleValue, {
+      toValue: 1,
+      duration: 200,
+      easing: Easing.linear
+    }).start();
+  }
+
   render() {
     const {
       container,
@@ -55,39 +69,56 @@ export default class LoginView extends React.Component {
       fbButton,
       buttonTextStyleDark,
       imgBackground,
-      fbLogo
+      fbLogo,
+      titleStyle
     } = styles;
+    const animateLogoTransform = {
+      transform: [
+        ...this.logoTraslationValue.getTranslateTransform(),
+        { scale: this.logoScaleValue }
+      ]
+    };
     return (
       <ImageBackground
         blurRadius={50}
-        source={require('../../../assets/bg2.jpg')} style={imgBackground}
+        source={Images.loginBackground2}
+        style={imgBackground}
       >
         <KeyboardAvoidingView
           behavior="padding"
           style={[container, {width: '100%'}]}
         >
-          <View style={logoContainer}>
-            <Image source={require('../../../assets/icon.jpg')} style={logoStyle} />
-          </View>
+          <Animated.View style={logoContainer}>
+            <Animated.Image
+              source={Images.logo}
+              style={[logoStyle, animateLogoTransform]}
+            />
+          </Animated.View>
           <View style={inputContainer}>
             <TextInput
               autoCapitalize="none"
               style={[inputStyle, textStyle]}
               onChangeText={(text) => this.setState({text})}
+              onFocus={this.handleKeyboardDidShow}
+              onBlur={this.handleKeyboardDidHide}
               placeholder="Enter your username"
               placeholderTextColor="#FFF"
               returnKeyType="next"
               value={this.state.user}
+              underlineColorAndroid="transparent"
             />
             <TextInput
               autoCapitalize="none"
               style={[inputStyle, textStyle]}
               onChangeText={(text) => this.setState({text})}
+              onFocus={this.handleKeyboardDidShow}
+              onBlur={this.handleKeyboardDidHide}
               placeholder="Enter your password"
               placeholderTextColor="#FFF"
               returnKeyType="send"
               secureTextEntry
               value={this.state.password}
+              underlineColorAndroid="transparent"
             />
           </View>
           <View style={inputContainer}>
@@ -123,67 +154,65 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 10,
-    backgroundColor: 'rgba(0,0,0,0.15)',
+    backgroundColor: Colors.lightOverlay
   },
   inputContainer: {
     flex: 2,
     width: '100%',
-    minHeight: 160,
+    minHeight: 170,
     paddingVertical: 40,
   },
   textStyle: {
-    fontSize: 18,
-    fontFamily: 'AvenirNext-Regular',
-    color: '#fff'
+    ...Fonts.h3b,
+    color: Colors.white
   },
   buttonTextStyle: {
-    fontSize: 18,
-    fontFamily: 'AvenirNext-Bold',
-    color: '#fff'
+    ...Fonts.h3b,
+    color: Colors.white
   },
   buttonTextStyleDark: {
-    fontSize: 18,
-    fontFamily: Platform.OS === 'ios' ? 'AvenirNext-Bold' : 'Roboto',
-    color: '#1da1f2'
+    ...Fonts.h3b,
+    color: Colors.blue
   },
   inputStyle: {
     height: 60,
-    borderColor: '#fff',
+    borderColor: Colors.white,
     borderWidth: 2,
     width: '100%',
     borderRadius: 30,
     color: '#fff',
     paddingHorizontal: 10,
-    marginVertical: 10,
+    marginVertical: 5,
     textAlign: 'center',
   },
   logoContainer: {
     flex: 3,
-    marginVertical: 80,
+    marginVertical: 80
   },
   logoStyle: {
-    width: 135,
-    height: 135,
-    paddingVertical: 60
+    width: 150,
+    height: 150,
+    borderRadius: 25,
+    paddingVertical: 20
   },
   buttonStyle: {
     height: 60,
     width: '100%',
     borderRadius: 30,
     paddingHorizontal: 10,
-    marginVertical: 10,
+    marginVertical: 5,
     alignItems: 'center',
     justifyContent: 'center'
   },
   loginButton: {
-    backgroundColor: '#1da1f2',
+    backgroundColor: Colors.blue,
   },
   fbButton: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.white,
     flexDirection: 'row',
     justifyContent: 'space-around'
   },
   fbLogo: {
-    width: 30, height: 30, tintColor: '#1da1f2'
+    width: 30, height: 30, tintColor: Colors.blue
   }
 });
