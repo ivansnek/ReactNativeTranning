@@ -2,11 +2,11 @@ import React from 'react';
 import { StyleSheet, Text, View, SectionList, FlatList, ListView } from 'react-native';
 
 import TableRow from '../../components/TableRow';
-import CustomHeader from '../../components/CustomHeader';
+import { CustomHeader, ListSeparator } from '../../components';
 import { Colors, Fonts } from '../../theme';
 import { fetchPopularMovies } from '../../utils/api';
 import { generateId } from '../../utils/helpers';
-// const movieList = require('../../utils/mock-data/movie-list.json');
+const movieList = require('../../utils/mock-data/movie-list.json');
 
 
 export default class MovieListView extends React.Component {
@@ -25,27 +25,22 @@ export default class MovieListView extends React.Component {
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    console.log('NEXT', nextState);
     if (nextState && nextState.movies) {
       return this.state.movies.length !== nextState.movies.length;
     }
     return false;
   }
 
-  loadMovies = () => {
+  loadMovies = async () => {
     if (!this.state.loading && this.state.lastPage) {
-      console.log('Fetch next movies');
-      fetchPopularMovies(this.state.lastPage)
-        .then(response =>
-          this.setState({
-            movies: [...this.state.movies, ...response.movies],
-            lastPage: parseInt(response.page) + 1,
-            loading: false
-          })
-        )
-        .catch(err => {
-          console.log('ERROR LOADING MOVIES', err);
-        });
+      const response = await fetchPopularMovies(this.state.lastPage);
+      if (response) {
+        this.setState({
+          movies: [...this.state.movies, ...response.movies],
+          lastPage: parseInt(response.page) + 1,
+          loading: false
+        })
+      }
     }
   }
 
@@ -56,15 +51,19 @@ export default class MovieListView extends React.Component {
       id={item.id}
       image={item.poster_path}
       index={index}
+      onPress={() =>
+        this.props.navigation.navigate(
+          'MovieDetail',
+          { title: item.title, movie: item }
+        )
+      }
       releaseDate={item.release_date}
       title={item.title}
     />
   );
 
-  separator = () => <View style={styles.listSeparator} />;
-
   render() {
-    const { movies, dataSource } = this.state;
+    const { movies } = this.state;
     // Static data
     // const movies = movieList.results;
     const {
@@ -73,12 +72,12 @@ export default class MovieListView extends React.Component {
     } = styles;
     return (
       <View style={container}>
-        <CustomHeader title="Popular Movies"/>
+        {/* <CustomHeader title="Popular Movies"/> */}
         <FlatList
           data={movies}
-          ItemSeparatorComponent={this.separator}
+          ItemSeparatorComponent={() => <ListSeparator color="light" />}
           keyExtractor={this.keyExtractor}
-          onEndReached={({ distanceFromEnd }) => {console.log('DISTANCE', distanceFromEnd); this.loadMovies();}}
+          onEndReached={({ distanceFromEnd }) => this.loadMovies()}
           onEndReachedThreshold={1}
           renderItem={this.renderItem}
           style={listStyle}
@@ -90,10 +89,5 @@ export default class MovieListView extends React.Component {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.darkBackground },
-  listStyle: { flex: 1, width: '100%' },
-  listSeparator: {
-    width: '100%',
-    height: 1,
-    backgroundColor: Colors.lightOverlay
-  }
+  listStyle: { flex: 1, width: '100%' }
 });

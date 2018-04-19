@@ -5,7 +5,8 @@ const Colors = {
   darkBackground: '#141d26',
   gray: '#8899a6',
   white: '#fff',
-  lightOverlay: 'rgba(0,0,0,0.15)'
+  lightOverlay: 'rgba(0,0,0,0.15)',
+  darkOverlay: 'rgba(0,0,0,0.35)'
 };
 
 export default Colors;

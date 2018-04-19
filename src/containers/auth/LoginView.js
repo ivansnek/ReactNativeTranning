@@ -13,6 +13,8 @@ import {
   Easing,
   Keyboard
 } from 'react-native';
+import { NavigationActions } from 'react-navigation';
+
 import { Images, Colors, Fonts } from '../../theme';
 
 export default class LoginView extends React.Component {
@@ -40,6 +42,20 @@ export default class LoginView extends React.Component {
       duration: 200,
       easing: Easing.linear
     }).start();
+  };
+
+  validForm () {
+    const { text, password } = this.state;
+    return text && password && text !== '' && password !== '';
+  }
+
+  handleOnLogin = () => {
+    if (this.validForm()) {
+      this.props.navigation.dispatch(NavigationActions.reset({
+        index: 0,
+        actions: [NavigationActions.navigate({ routeName: 'MovieList' })],
+      }));
+    }
   }
 
   handleKeyboardDidHide = () => {
@@ -104,13 +120,13 @@ export default class LoginView extends React.Component {
               placeholder="Enter your username"
               placeholderTextColor="#FFF"
               returnKeyType="next"
-              value={this.state.user}
+              value={this.state.text}
               underlineColorAndroid="transparent"
             />
             <TextInput
               autoCapitalize="none"
               style={[inputStyle, textStyle]}
-              onChangeText={(text) => this.setState({text})}
+              onChangeText={(password) => this.setState({password})}
               onFocus={this.handleKeyboardDidShow}
               onBlur={this.handleKeyboardDidHide}
               placeholder="Enter your password"
@@ -123,13 +139,13 @@ export default class LoginView extends React.Component {
           </View>
           <View style={inputContainer}>
             <TouchableOpacity
-              onPress={this._onPressButton}
+              onPress={this.handleOnLogin}
               style={[buttonStyle, loginButton]}
             >
               <Text style={buttonTextStyle}>LOGIN</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={this._onPressButton}
+              onPress={this.handleOnLogin}
               style={[buttonStyle, fbButton]}
               >
               <Image

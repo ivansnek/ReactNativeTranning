@@ -4,14 +4,17 @@ import {
   Text,
   TouchableWithoutFeedback,
   StyleSheet,
-  Image
+  Image,
+  TouchableOpacity
 } from 'react-native';
 
 import { Colors, Fonts, Images, Metrics } from '../theme';
+import { formatDate } from '../utils/helpers';
 
-export default function({ title, image, releaseDate, index, id }) {
+export default function({ title, image, releaseDate, index, id, onPress }) {
+  // First Aproach use View then in the Navigation implementation use TO
   return (
-    <View style={styles.container}>
+    <TouchableOpacity onPress={() => onPress()} style={styles.container}>
       <Image
         source={{ uri: image, cache: 'force-cache' }}
         style={styles.logoStyle}
@@ -32,11 +35,11 @@ export default function({ title, image, releaseDate, index, id }) {
             source={Images.calendar}
             style={styles.infoIcon}
           />
-          <Text style={styles.releaseDate}>{releaseDate}</Text>
+          <Text style={styles.releaseDate}>{formatDate(releaseDate)}</Text>
         </View>
       </View>
       <Image source={Images.chevronRight} style={styles.arrowRight} />
-    </View>
+    </TouchableOpacity>
   )
 }
 

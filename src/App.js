@@ -1,12 +1,11 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import LoginView from './containers/auth/LoginView';
-import MovieListView from './containers/songs/MovieListView';
+import AppRouting from './Routes';
 
 export default class App extends React.Component {
   render() {
-    return <MovieListView />;
+    return <AppRouting />;
   }
 }
 
