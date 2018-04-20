@@ -8,7 +8,8 @@ import {
   TouchableOpacity,
   Linking,
   Share,
-  Platform
+  Platform,
+  Animated
 } from 'react-native';
 
 import { Colors, Fonts, Metrics, Images } from '../../theme';
@@ -23,8 +24,14 @@ export default class MovieDetailView extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      movie: {}
+      movie: {},
+      imageBlurRadius: 0
     };
+    this.scaleImageValue = new Animated.Value(1);
+    this.blurRadiusImageValue = new Animated.Value(0);
+    this.blurRadiusImageValue.addListener((value) => {
+      this.setState({ imageBlurRadius: value.value });
+    })
   }
 
   async componentWillMount() {
@@ -51,9 +58,45 @@ export default class MovieDetailView extends React.Component {
 
   formatGenres = genres => genres ? genres.map(g => g.name).join() : '' ;
 
+  shouldScaleUp (event) {
+    let currentOffset = event.nativeEvent.contentOffset.y;
+    return currentOffset < 0;
+  }
+
+  handleOnScroll = event => {
+    let currentOffset = event.nativeEvent.contentOffset.y;
+    let scaleValue = currentOffset < 0 ? 1 + 0.8*(-currentOffset / 10) : 1;
+    if (scaleValue > 2) scaleValue = 2;
+    if (currentOffset < 0) {
+      Animated.parallel([
+        Animated.timing(this.blurRadiusImageValue, {
+          toValue: scaleValue * 2,
+          duration: 200
+        }).start(),
+        Animated.timing(this.scaleImageValue, {
+          toValue: scaleValue,
+          duration: 200
+        }).start()
+      ]);
+    }
+  };
+
+  handleImageReset = event => {
+    Animated.parallel([
+      Animated.timing(this.blurRadiusImageValue, {
+        toValue: 0,
+        duration: 200
+      }).start(),
+      Animated.timing(this.scaleImageValue, {
+        toValue: 1,
+        duration: 200
+      }).start()
+    ]);
+}
   render() {
-    const { title, movie } = this.props.navigation.state.params;
-    const data = this.state.movie;
+    const { title } = this.props.navigation.state.params;
+    const { movie, imageBlurRadius } = this.state;
+    const scaleStyle = { transform: [{ scale: this.scaleImageValue }] };
     const {
       container,
       generalInfoContainer,
@@ -66,79 +109,85 @@ export default class MovieDetailView extends React.Component {
       shareButton,
       titleContainer
     } = styles;
-    if (data) {
+    if (movie) {
       return (
         <View style={container}>
-          <Image
+          <Animated.Image
+            blurRadius={imageBlurRadius}
             resizeMode="cover"
             source={{
-              uri: data.backdrop_path
+              uri: movie.backdrop_path
             }}
-            style={backgroundImage}
+            style={[backgroundImage, scaleStyle ]}
           />
-          <ScrollView style={container}>
-          <View style={titleContainer}>
-            <Text numberOfLines={1} style={movieTitle}>{title}</Text>
-            <TouchableOpacity onPress={() => this.handleShareMovie(data.homepage)}>
-              <Image source={Images.share} style={shareButton} />
-            </TouchableOpacity>
-          </View>
-          <ListSeparator color="dark" />
-          <View style={generalInfoContainer}>
-            <Image
-              resizeMode="contain"
-              source={{
-                uri: data.poster_path
-              }}
-              style={posterImage}
-            />
-            <View style={{justifyContent: 'flex-start'}}>
-              <InfoRow
-                icon={Images.calendar}
-                label="Release Date:"
-                text={formatDate(data.release_date)}
-              />
-              <InfoRow
-                icon={Images.chat}
-                label="Language:"
-                text={data.original_language}
-              />
-              <InfoRow
-                icon={Images.world}
-                label="Home Page:"
-              />
-              <TouchableOpacity onPress={() => this.handleOpenURL(data.homepage)}>
-                <InfoRow
-                  lines={2}
-                  text={data.homepage}
-                />
+          <ScrollView
+            style={container}
+            onScroll={this.handleOnScroll}
+            onScrollEndDrag={this.handleImageReset}
+          >
+
+            <View style={titleContainer}>
+              <Text numberOfLines={1} style={movieTitle}>{title}</Text>
+              <TouchableOpacity onPress={() => this.handleShareMovie(movie.homepage)}>
+                <Image source={Images.share} style={shareButton} />
               </TouchableOpacity>
             </View>
-          </View>
-          <ListSeparator color="dark" />
-          <View style={detailInfoContainer}>
-            <Text style={label}>Overview</Text>
-            <Text style={overViewText} textAlign="justify">{data.overview}</Text>
-          </View>
-          <ListSeparator color="dark" />
-          <View style={detailInfoContainer}>
-            <InfoRow
-              icon={Images.movie}
-              label="Genre: "
-              text={this.formatGenres(data.genres)}
-            />
-            <InfoRow
-              icon={Images.money}
-              label="Budget: "
-              text={`$${formatCurrency(data.budget)}`}
-            />
-            <InfoRow
-              icon={Images.money}
-              label="Revenue: "
-              text={`$${formatCurrency(data.revenue)}`}
-            />
-          </View>
-        </ScrollView>
+            <ListSeparator color="dark" />
+            <View style={generalInfoContainer}>
+              <Image
+                resizeMode="contain"
+                source={{
+                  uri: movie.poster_path
+                }}
+                style={posterImage}
+              />
+              <View style={{justifyContent: 'flex-start'}}>
+                <InfoRow
+                  icon={Images.calendar}
+                  label="Release Date:"
+                  text={formatDate(movie.release_date)}
+                />
+                <InfoRow
+                  icon={Images.chat}
+                  label="Language:"
+                  text={movie.original_language}
+                />
+                <InfoRow
+                  icon={Images.world}
+                  label="Home Page:"
+                />
+                <TouchableOpacity onPress={() => this.handleOpenURL(movie.homepage)}>
+                  <InfoRow
+                    lines={2}
+                    text={movie.homepage}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+            <ListSeparator color="dark" />
+            <View style={detailInfoContainer}>
+              <Text style={label}>Overview</Text>
+              <Text style={overViewText} textAlign="justify">{movie.overview}</Text>
+            </View>
+            <ListSeparator color="dark" />
+            <View style={detailInfoContainer}>
+              <InfoRow
+                icon={Images.movie}
+                label="Genre: "
+                text={this.formatGenres(movie.genres)}
+              />
+              <InfoRow
+                icon={Images.money}
+                label="Budget: "
+                text={`${formatCurrency(movie.budget)}`}
+              />
+              <InfoRow
+                icon={Images.money}
+                label="Revenue: "
+                text={`${formatCurrency(movie.revenue)}`}
+              />
+            </View>
+          </ScrollView>
         </View>
       );
     } return null;
@@ -147,15 +196,19 @@ export default class MovieDetailView extends React.Component {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.darkBackground },
+  container: {
+    flex: 1,
+    backgroundColor: Colors.darkBackground
+  },
   backgroundImage: {
     width: '100%',
-    height: 150
+    height: 150,
+    zIndex: 100
   },
   titleContainer: {
     flexDirection: 'row',
     justifyContent:'space-between',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   posterImage: {
     width: oneThirdScreenSize,

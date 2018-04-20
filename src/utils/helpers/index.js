@@ -24,6 +24,7 @@ const updateImages = item => {
 }
 
 const formatDate = value => {
+  if (!value) return 'No especified';
   const date = new Date(value);
   const day = date.getDate();
   const month = MONTHS_NAMES[date.getMonth()];
@@ -31,6 +32,7 @@ const formatDate = value => {
   return `${month} ${day}, ${year}`;
 }
 
-const formatCurrency = currency => currency ? currency.toLocaleString() : '';
+const formatCurrency = currency =>
+  currency ? `$${currency.toLocaleString()}` : 'No especified';
 
 export { generateId, populateImageURIs, formatDate, formatCurrency };
