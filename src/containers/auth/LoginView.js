@@ -59,23 +59,26 @@ export default class LoginView extends React.Component {
   }
 
   handleKeyboardDidHide = () => {
-    Animated.timing(this.logoTraslationValue, {
-      toValue: { x: 0, y: 0 },
-      duration: 200,
-      easing: Easing.linear
-    }).start();
-    Animated.timing(this.logoScaleValue, {
-      toValue: 1,
-      duration: 200,
-      easing: Easing.linear
-    }).start();
-  }
+    Animated.parallel(
+      Animated.timing(this.logoTraslationValue, {
+        toValue: { x: 0, y: 0 },
+        duration: 200,
+        easing: Easing.linear
+      }).start(),
+      Animated.timing(this.logoScaleValue, {
+        toValue: 1,
+        duration: 200,
+        easing: Easing.linear
+      }).start()
+    )
+  };
 
   render() {
     const {
       container,
       logoContainer,
       logoStyle,
+      logoStyleSmall,
       inputContainer,
       inputStyle,
       textStyle,
@@ -104,12 +107,17 @@ export default class LoginView extends React.Component {
           behavior="padding"
           style={[container, {width: '100%'}]}
         >
-          <Animated.View style={logoContainer}>
+          <View style={logoContainer}>
+            {/* FIRST APPROACH */}
+            {/* <Image
+              source={Images.logo}
+              style={logoStyleSmall}
+            /> */}
             <Animated.Image
               source={Images.logo}
               style={[logoStyle, animateLogoTransform]}
             />
-          </Animated.View>
+          </View>
           <View style={inputContainer}>
             <TextInput
               autoCapitalize="none"
@@ -210,6 +218,12 @@ const styles = StyleSheet.create({
     height: 150,
     borderRadius: 25,
     paddingVertical: 20
+  },
+  logoStyleSmall: {
+    width: 100,
+    height: 100,
+    borderRadius: 15,
+    paddingVertical: 10
   },
   buttonStyle: {
     height: 60,

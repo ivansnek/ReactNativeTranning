@@ -25,13 +25,10 @@ export default class MovieDetailView extends React.Component {
     super(props);
     this.state = {
       movie: {},
-      imageBlurRadius: 0
+      scrollY: new Animated.Value(0)
     };
     this.scaleImageValue = new Animated.Value(1);
-    this.blurRadiusImageValue = new Animated.Value(0);
-    this.blurRadiusImageValue.addListener((value) => {
-      this.setState({ imageBlurRadius: value.value });
-    })
+    this.opacityValue = new Animated.Value(1);
   }
 
   async componentWillMount() {
@@ -63,40 +60,49 @@ export default class MovieDetailView extends React.Component {
     return currentOffset < 0;
   }
 
+  /*
+  * Poor Performance implementation
+  */
   handleOnScroll = event => {
     let currentOffset = event.nativeEvent.contentOffset.y;
     let scaleValue = currentOffset < 0 ? 1 + 0.8*(-currentOffset / 10) : 1;
+    let opacityValue = currentOffset > 0 ? 1 + 0.9*(-currentOffset / 10) : 1;
     if (scaleValue > 2) scaleValue = 2;
+    if (opacityValue < 0) opacityValue = 0;
     if (currentOffset < 0) {
-      Animated.parallel([
-        Animated.timing(this.blurRadiusImageValue, {
-          toValue: scaleValue * 2,
-          duration: 200
-        }).start(),
-        Animated.timing(this.scaleImageValue, {
-          toValue: scaleValue,
-          duration: 200
-        }).start()
-      ]);
+      Animated.timing(this.scaleImageValue, {
+        toValue: scaleValue,
+        duration: 200
+      }).start();
+    } else {
+      console.log('WILL ANIMATGE UP');
+      Animated.timing(this.opacityValue, {
+        toValue: opacityValue,
+        duration: 200
+      }).start();
     }
   };
 
+  /*
+  * Poor Performance implementation
+  */
   handleImageReset = event => {
-    Animated.parallel([
-      Animated.timing(this.blurRadiusImageValue, {
-        toValue: 0,
+    Animated.parallel(
+      Animated.timing(this.opacityValue, {
+        toValue: 1,
         duration: 200
       }).start(),
       Animated.timing(this.scaleImageValue, {
         toValue: 1,
         duration: 200
       }).start()
-    ]);
+    );
 }
   render() {
     const { title } = this.props.navigation.state.params;
-    const { movie, imageBlurRadius } = this.state;
+    const { movie } = this.state;
     const scaleStyle = { transform: [{ scale: this.scaleImageValue }] };
+    const opacityStyle = { opacity: this.opacityValue };
     const {
       container,
       generalInfoContainer,
@@ -107,23 +113,55 @@ export default class MovieDetailView extends React.Component {
       label,
       overViewText,
       shareButton,
-      titleContainer
+      titleContainer,
+      listContainer
     } = styles;
     if (movie) {
       return (
         <View style={container}>
-          <Animated.Image
-            blurRadius={imageBlurRadius}
+          {/* <Animated.Image
             resizeMode="cover"
             source={{
               uri: movie.backdrop_path
             }}
-            style={[backgroundImage, scaleStyle ]}
+            style={[backgroundImage, scaleStyle, opacityStyle ]}
+          /> */}
+          <Animated.Image
+            resizeMode="cover"
+            style={[styles.backgroundImage, {
+              opacity: this.state.scrollY.interpolate({
+                inputRange: [0, 150],
+                outputRange: [1, 0]
+              }),
+              transform: [{
+                scale: this.state.scrollY.interpolate({
+                  inputRange: [-200, 0, 1],
+                  outputRange: [2.0, 1, 1]
+                })
+              }]
+            }]}
+            source={{
+              uri: movie.backdrop_path
+            }}
           />
-          <ScrollView
+          {/*  */}
+          {/* <ScrollView
+            contentContainerStyle={listContainer}
             style={container}
             onScroll={this.handleOnScroll}
             onScrollEndDrag={this.handleImageReset}
+          > */}
+          <Animated.ScrollView
+            contentContainerStyle={listContainer}
+            style={container}
+            scrollEventThrottle={16}
+            onScroll={
+              Animated.event([{
+                nativeEvent: { contentOffset: { y: this.state.scrollY } }
+              }], {
+                useNativeDriver: true
+              })
+            }
           >
 
             <View style={titleContainer}>
@@ -187,7 +225,8 @@ export default class MovieDetailView extends React.Component {
                 text={`${formatCurrency(movie.revenue)}`}
               />
             </View>
-          </ScrollView>
+          {/* </ScrollView> */}
+          </Animated.ScrollView>
         </View>
       );
     } return null;
@@ -200,10 +239,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.darkBackground
   },
+  listContainer: { top: 150 },
   backgroundImage: {
     width: '100%',
     height: 150,
-    zIndex: 100
+    zIndex: 100,
+    position: 'absolute'
   },
   titleContainer: {
     flexDirection: 'row',
