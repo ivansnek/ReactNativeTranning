@@ -10,7 +10,8 @@ const Images = {
   money: require('../../assets/money.png'),
   world: require('../../assets/world.png'),
   chat: require('../../assets/chats.png'),
-  movie: require('../../assets/movie-icon.png')
+  movie: require('../../assets/movie-icon.png'),
+  close: require('../../assets/close.png')
 };
 
 export default Images;

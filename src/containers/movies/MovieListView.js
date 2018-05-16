@@ -1,8 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View, SectionList, FlatList, ListView } from 'react-native';
 
-import TableRow from '../../components/TableRow';
-import { CustomHeader, ListSeparator } from '../../components';
+import { CustomHeader, ListSeparator, LoadingPlaceHolderRow, TableRow } from '../../components';
 import { Colors, Fonts } from '../../theme';
 import { fetchPopularMovies } from '../../utils/api';
 import { generateId } from '../../utils/helpers';
@@ -16,8 +15,12 @@ export default class MovieListView extends React.Component {
     this.state = {
       movies: [],
       lastPage: 1,
-      loading: false
+      loading: false,
+      moviesLoaded: false
     };
+    this.placeholders = Array.apply(null, Array(10)).map(item => ({
+      id: generateId()
+    }));
   }
 
   componentWillMount() {
@@ -38,7 +41,8 @@ export default class MovieListView extends React.Component {
         this.setState({
           movies: [...this.state.movies, ...response.movies],
           lastPage: parseInt(response.page) + 1,
-          loading: false
+          loading: false,
+          moviesLoaded: true
         })
       }
     }
@@ -62,10 +66,13 @@ export default class MovieListView extends React.Component {
     />
   );
 
+  renderEmptyItem = () => <LoadingPlaceHolderRow />;
+
   render() {
-    const { movies } = this.state;
+    const { movies, moviesLoaded } = this.state;
     // Static data
     // const movies = movieList.results;
+    const data = moviesLoaded ? movies : this.placeholders;
     const {
       container,
       listStyle
@@ -74,12 +81,12 @@ export default class MovieListView extends React.Component {
       <View style={container}>
         {/* <CustomHeader title="Popular Movies"/> */}
         <FlatList
-          data={movies}
+          data={data}
           ItemSeparatorComponent={() => <ListSeparator color="light" />}
           keyExtractor={this.keyExtractor}
           onEndReached={({ distanceFromEnd }) => this.loadMovies()}
           onEndReachedThreshold={1}
-          renderItem={this.renderItem}
+          renderItem={moviesLoaded ? this.renderItem : this.renderEmptyItem }
           style={listStyle}
         />
       </View>

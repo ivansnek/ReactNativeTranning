@@ -2,10 +2,16 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import AppRouting from './Routes';
+import { NetworkStatusLabel } from './components';
 
 export default class App extends React.Component {
   render() {
-    return <AppRouting />;
+    return (
+      <View style={{flex: 1}}>
+        <NetworkStatusLabel />
+        <AppRouting />
+      </View>
+    );
   }
 }
 

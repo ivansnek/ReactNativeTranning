@@ -82,6 +82,10 @@ const Fonts = {
   normal: {
     fontSize: sizes.normal,
     fontFamily: types.base
+  },
+  small: {
+    fontSize: sizes.small,
+    fontFamily: types.bold
   }
 };
 

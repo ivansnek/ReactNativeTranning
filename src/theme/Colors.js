@@ -5,6 +5,8 @@ const Colors = {
   darkBackground: '#141d26',
   gray: '#8899a6',
   white: '#fff',
+  red: '#FF351E',
+  green: '#38FFCA',
   lightOverlay: 'rgba(0,0,0,0.15)',
   darkOverlay: 'rgba(0,0,0,0.35)'
 };

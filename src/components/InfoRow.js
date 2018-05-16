@@ -25,8 +25,8 @@ export default function ({ icon, label, text, lines }) {
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    height: 25,
-    maxHeight: 50,
+    height: 30  ,
+    maxHeight: 60,
     flexDirection: 'row'
   },
   detailLabel: {

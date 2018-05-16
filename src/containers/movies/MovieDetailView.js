@@ -144,7 +144,6 @@ export default class MovieDetailView extends React.Component {
               uri: movie.backdrop_path
             }}
           />
-          {/*  */}
           {/* <ScrollView
             contentContainerStyle={listContainer}
             style={container}
@@ -154,12 +153,12 @@ export default class MovieDetailView extends React.Component {
           <Animated.ScrollView
             contentContainerStyle={listContainer}
             style={container}
-            scrollEventThrottle={16}
+            scrollEventThrottle={1}
             onScroll={
               Animated.event([{
                 nativeEvent: { contentOffset: { y: this.state.scrollY } }
               }], {
-                useNativeDriver: true
+                useNativeDriver: true//Platform.OS === 'ios'
               })
             }
           >
@@ -239,7 +238,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.darkBackground
   },
-  listContainer: { top: 150 },
+  listContainer: {
+    top: 150,
+    minHeight: Metrics.screenHeight,
+    paddingBottom: 150
+  },
   backgroundImage: {
     width: '100%',
     height: 150,
@@ -261,7 +264,7 @@ const styles = StyleSheet.create({
     padding: Metrics.basePadding
   },
   overViewText: {
-    ...Fonts.small,
+    ...Fonts.normal,
     color: Colors.white,
     paddingVertical: Metrics.basePadding
   },

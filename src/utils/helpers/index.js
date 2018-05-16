@@ -17,11 +17,11 @@ const populateImageURIs = data =>
   Array.isArray(data)
     ? data.map(movie => updateImages(movie)) : updateImages(data);
 
-const updateImages = item => {
-  item.poster_path = `${IMAGE_HOST}w300${item.poster_path}`;
-  item.backdrop_path = `${IMAGE_HOST}w500${item.backdrop_path}`;
-  return item;
-}
+const updateImages = item => ({
+  ...item,
+  poster_path: `${IMAGE_HOST}w300${item.poster_path}`,
+  backdrop_path: `${IMAGE_HOST}w500${item.backdrop_path}`
+});
 
 const formatDate = value => {
   if (!value) return 'No especified';
